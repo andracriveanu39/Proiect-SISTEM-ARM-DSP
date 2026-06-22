@@ -1,0 +1,107 @@
+
+ARCHITECTURE(ADSP-2181)
+
+SEARCH_DIR( $ADI_DSP\218x\lib )
+
+// specific code and data
+//$LIBRARIES =  ;
+
+// Libraries from the command line are included in COMMAND_LINE_OBJECTS.
+//$OBJECTS = $COMMAND_LINE_OBJECTS , libio.dlb , libc.dlb ;
+$OBJECTS = $COMMAND_LINE_OBJECTS;
+
+// 2181 has 16K words (24-bit) of Program RAM and 16K words (16-bit) of Data RAM
+MEMORY
+{
+    seg_inttab { TYPE(PM RAM) START(0x00000) END(0x0002f) WIDTH(24) }
+    seg_code { TYPE(PM RAM) START(0x00030) END(0x017cf) WIDTH(24) }
+	seg_code2 { TYPE(PM RAM) START(0x02a00) END(0x02fff) WIDTH(24) }
+	seg_pmda   { TYPE(PM RAM) START(0x03000) END(0x031ff) WIDTH(24) }
+
+    seg_data1  { TYPE(DM RAM) START(0x00000) END(0x00fff) WIDTH(16) }
+    seg_data2  { TYPE(DM RAM) START(0x01000) END(0x0100f) WIDTH(16) }
+	seg_bufvar1 { TYPE(DM RAM) START(0x01010) END(0x010ff) WIDTH(16) }
+	seg_bufvar2 { TYPE(DM RAM) START(0x01100) END(0x019ff) WIDTH(16) }
+	seg_bufvar3 { TYPE(DM RAM) START(0x01a00) END(0x01fff) WIDTH(16) }
+
+	//-------------------RESERVED For the Monitor-------------------------------
+	//INT_PM_RSVR  { TYPE(PM RAM) START(0x000017d0) END(0x00001FcF) WIDTH(24) }
+	//INT_SPEC_RSVR{ TYPE(PM RAM) START(0x00001fd0) END(0x00001FFF) WIDTH(24) }
+	//INT_DM_RSVR  { TYPE(DM RAM) START(0x00003b00) END(0x00003dff) WIDTH(16) }
+}
+
+PROCESSOR p0
+{
+    LINK_AGAINST( $COMMAND_LINE_LINK_AGAINST)
+    OUTPUT( $COMMAND_LINE_OUTPUT_FILE )
+
+    SECTIONS
+    {
+        sec_inttab
+        {
+            INPUT_SECTIONS( $OBJECTS(interrupts) )
+        } >seg_inttab
+
+		sec_bufvar1
+        {
+            INPUT_SECTIONS( $OBJECTS(buf_var1) )
+        } >seg_bufvar1
+		
+		sec_bufvar2
+        {
+            INPUT_SECTIONS( $OBJECTS(buf_var2) )
+        } >seg_bufvar2
+
+		sec_bufvar3
+        {
+            INPUT_SECTIONS( $OBJECTS(buf_var3) )
+        } >seg_bufvar3
+
+	    sec_code
+        {
+            INPUT_SECTIONS( $OBJECTS(seg_code) )
+        } >seg_code
+
+		sec_code2
+        {
+            INPUT_SECTIONS( $OBJECTS(seg_code2) )
+        } >seg_code2
+
+        sec_data1
+        {
+            INPUT_SECTIONS( $OBJECTS(data1) )
+        } >seg_data1
+
+        sec_data2
+        {
+            INPUT_SECTIONS( $OBJECTS(data2) )
+        } >seg_data2
+
+		 seg_pmda
+        {
+            INPUT_SECTIONS( $OBJECTS(pm_da) )
+        } >seg_pmda
+
+        // support for initialization, including C++
+        //sec_ctor
+        //{
+        //    INPUT_SECTIONS( $OBJECTS(ctor) )
+        //} >seg_data1
+
+        // provide linker variables describing the stack (grows down)
+        //   ldf_stack_limit is the lowest address in the stack
+        //   ldf_stack_base is the highest address in the stack 
+//        sec_stack
+  //  /    {
+    //        ldf_stack_limit = .;
+  //          ldf_stack_base = . + MEMORY_SIZEOF(seg_stack) - 1;
+    //    } >seg_stack
+      //  
+ //       sec_heap
+   //     {
+     //       .heap = .;
+	   // .heap_size = MEMORY_SIZEOF(seg_heap);
+        //    .heap_end = . + MEMORY_SIZEOF(seg_heap) - 1;
+       // } >seg_heap
+    }
+}
